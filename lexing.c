@@ -6,7 +6,7 @@
 /*   By: refeunte <refeunte@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 14:59:26 by refeunte          #+#    #+#             */
-/*   Updated: 2025/09/04 16:34:49 by refeunte         ###   ########.fr       */
+/*   Updated: 2025/09/08 13:28:08 by refeunte         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,20 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stddef.h>
+
+char *ft_strndup(const char *s, size_t n) 
+{
+    char *dup = malloc(n + 1);
+    char *godrick;
+    if (!dup)
+        return NULL;
+    godrick = dup;
+    while (n-- && *s)
+        *godrick++ = *s++;
+    *godrick = '\0';
+    return dup;
+}
 
 int ft_isspace(char c) 
 {
@@ -38,30 +52,31 @@ t_token *ft_lexer(const char *line)
 {
     t_token *head = NULL;
     t_token *tail = NULL;
-    const char *radan = line;
+    const char *radhan = line;
 
-    while (*radan)
+    while (*radhan)
     {//on igniore les espaces trql t'as capté
-        if (ft_isspace(*radan))
+        if (ft_isspace(*radhan))
         {
-            radan++;
+            radhan++;
             continue;
         }
-        if (*radan == '|' || *radan == '<' || *radan == '>' || *radan == '>>')
+        if (*radhan == '|' || *radhan == '<' || *radhan == '>')//voir s'il faut gérer les >>
         {//gérer les cas spéciaux, les opérateurs et touts
-            t_token *token = ft_new_token(radan, 1);
+            t_token *token = ft_new_token(radhan, 1);
             if (!head)
                 head = token;
             else
                 tail->next = token;
-                radan++;
-                continue;
+            tail = token;
+            radhan++;
+            continue;
         }
         
-        const char *start = radan;
-        while (*radan && ft_isspace(*radan) && *radan != '|' && *radan != '>' && *radan != '<' && *radan != '>>')
-            radan++;
-        t_token *token = ft_new_token(start, p - start);
+        const char *start = radhan;
+        while (*radhan && !ft_isspace(*radhan) && *radhan != '|' && *radhan != '>' && *radhan != '<')
+            radhan++;
+        t_token *token = ft_new_token(start, radhan - start);
         if (!head)
             head = token;
         else
@@ -82,7 +97,7 @@ void ft_print_token(t_token *token)
 
 int main()
 {
-    const char *line = "cat file.txt | grep hello > out.txt";
+    const char *line = "cat file.txt | grep hello > < out.txt";
     t_token *token = ft_lexer(line);
     ft_print_token(token);
     return (0);//free malenia
