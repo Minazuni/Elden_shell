@@ -6,7 +6,7 @@
 /*   By: ko-mahon <ko-mahon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 14:59:26 by refeunte          #+#    #+#             */
-/*   Updated: 2025/09/22 14:18:40 by ko-mahon         ###   ########.fr       */
+/*   Updated: 2025/09/22 14:29:44 by ko-mahon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,51 +57,52 @@ t_token	*ft_new_token(const char *start, int len)
 
 t_token	*ft_lexer(const char *line)
 {
-	t_token		*head = NULL;
-	t_token		*tail = NULL;
+	t_token		*head;
+	t_token		*tail;
+	const char	*radhan = line;
 	t_token		*token;
 	const char	*start;
 
-	while (*line)
+	head = NULL;
+	tail = NULL;
+	while (*radhan)
 	{
 		// Ignorer les espaces
-		if (ft_isspace(*line))
+		if (ft_isspace(*radhan))
 		{
-			line++;
-			continue;
+			radhan++;
+			continue ;
 		}
-
 		// Gérer les opérateurs spéciaux
-		if (*line == '|')
+		if (*radhan == '|')
 		{
-			token = ft_new_token(line, 1);
-			line++;
+			token = ft_new_token(radhan, 1);
+			radhan++;
 		}
-		else if (*line == '<')
+		else if (*radhan == '<')
 		{
-			token = ft_new_token(line, 1);
-			line++;
+			token = ft_new_token(radhan, 1);
+			radhan++;
 		}
-		else if (*line == '>' && *(line + 1) == '>')
+		else if (*radhan == '>' && *(radhan + 1) == '>')
 		{
-			token = ft_new_token(line, 2);
-			line += 2;
+			token = ft_new_token(radhan, 2);
+			radhan += 2;
 		}
-		else if (*line == '>')
+		else if (*radhan == '>')
 		{
-			token = ft_new_token(line, 1);
-			line++;
+			token = ft_new_token(radhan, 1);
+			radhan++;
 		}
 		else
 		{
 			// C’est un mot
-			start = line;
-			while (*line && !ft_isspace(*line) && *line != '|' 
-				&& *line != '<' && *line != '>')
-				line++;
-			token = ft_new_token(start, line - start);
+			start = radhan;
+			while (*radhan && !ft_isspace(*radhan) && *radhan != '|'
+				&& *radhan != '<' && *radhan != '>')
+				radhan++;
+			token = ft_new_token(start, radhan - start);
 		}
-
 		// Ajouter le token à la liste
 		if (!head)
 			head = token;
@@ -111,7 +112,6 @@ t_token	*ft_lexer(const char *line)
 	}
 	return (head);
 }
-
 void	ft_print_token(t_token *token)
 {
 	while (token)
