@@ -6,7 +6,7 @@
 /*   By: ko-mahon <ko-mahon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/25 14:59:26 by refeunte          #+#    #+#             */
-/*   Updated: 2025/09/22 14:29:44 by ko-mahon         ###   ########.fr       */
+/*   Updated: 2025/09/23 11:57:22 by ko-mahon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,31 +62,44 @@ t_token	*ft_lexer(const char *line)
 	const char	*radhan = line;
 	t_token		*token;
 	const char	*start;
+	char		quote;
 
 	head = NULL;
 	tail = NULL;
 	while (*radhan)
 	{
-		// Ignorer les espaces
 		if (ft_isspace(*radhan))
 		{
 			radhan++;
 			continue ;
 		}
-		// Gérer les opérateurs spéciaux
+		// Pipes
 		if (*radhan == '|')
 		{
 			token = ft_new_token(radhan, 1);
 			radhan++;
 		}
+		// Redirections stderr
+		else if (*radhan == '2' && *(radhan + 1) == '>' && *(radhan + 2) == '>')
+		{
+			token = ft_new_token(radhan, 3); // 2>>
+			radhan += 3;
+		}
+		else if (*radhan == '2' && *(radhan + 1) == '>')
+		{
+			token = ft_new_token(radhan, 2); // 2>
+			radhan += 2;
+		}
+		// Redirections stdin
 		else if (*radhan == '<')
 		{
 			token = ft_new_token(radhan, 1);
 			radhan++;
 		}
+		// Redirections stdout
 		else if (*radhan == '>' && *(radhan + 1) == '>')
 		{
-			token = ft_new_token(radhan, 2);
+			token = ft_new_token(radhan, 2); // >>
 			radhan += 2;
 		}
 		else if (*radhan == '>')
@@ -94,9 +107,21 @@ t_token	*ft_lexer(const char *line)
 			token = ft_new_token(radhan, 1);
 			radhan++;
 		}
+		// Quotes simples ou doubles
+		else if (*radhan == '\'' || *radhan == '"')
+		{
+			quote = *radhan;
+			radhan++;       // skip ouverture quote
+			start = radhan; // début du contenu
+			while (*radhan && *radhan != quote)
+				radhan++;
+			token = ft_new_token(start, radhan - start);
+			if (*radhan == quote)
+				radhan++; // skip fermeture quote
+		}
+		// Mot normal
 		else
 		{
-			// C’est un mot
 			start = radhan;
 			while (*radhan && !ft_isspace(*radhan) && *radhan != '|'
 				&& *radhan != '<' && *radhan != '>')
@@ -112,6 +137,7 @@ t_token	*ft_lexer(const char *line)
 	}
 	return (head);
 }
+
 void	ft_print_token(t_token *token)
 {
 	while (token)

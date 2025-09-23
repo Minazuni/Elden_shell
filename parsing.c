@@ -6,7 +6,7 @@
 /*   By: ko-mahon <ko-mahon@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/03 17:40:00 by ko-mahon          #+#    #+#             */
-/*   Updated: 2025/09/22 12:54:43 by ko-mahon         ###   ########.fr       */
+/*   Updated: 2025/09/23 12:08:20 by ko-mahon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,13 @@ t_cmd	*parse_tokens(t_token *tokens)
 		if (is_word(tokens->value))
 		{
 			add_to_argv(current_cmd, tokens->value);
+		}
+		else if (ft_strcmp(tokens->value, "2>>") == 0)
+		{
+			current_cmd->err_append = 1;
+			if (tokens->next)
+				current_cmd->errfile = ft_strdup(tokens->next->value);
+			tokens = tokens->next;
 		}
 		else if (strcmp(tokens->value, "<") == 0)
 		{
