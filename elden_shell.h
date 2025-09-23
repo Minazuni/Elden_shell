@@ -20,10 +20,14 @@ typedef struct s_token
 /* ------------------- COMMAND ------------------- */
 typedef struct s_cmd
 {
-	char **argv;        // arguments de la commande
-	char *infile;       // fichier d'entrée
-	char *outfile;      // fichier de sortie
-	int append;         // concatenation fichiers
+	char **argv;   // arguments de la commande
+	char *infile;  // fichier d'entrée
+	char *outfile; // fichier de sortie (stdout)
+	int append;    // mode append pour stdout
+
+	char *errfile;  // fichier de sortie (stderr)
+	int err_append; // mode append pour stderr
+
 	struct s_cmd *next; // commande suivante (si pipe)
 }					t_cmd;
 
