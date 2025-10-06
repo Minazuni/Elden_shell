@@ -2,20 +2,23 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   elden_shell.c                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ko-mahon <ko-mahon@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
+/*                                                    +:+ +:+
+	+:+     */
+/*   By: ko-mahon <ko-mahon@student.42.fr>          +#+  +:+
+	+#+        */
+/*                                                +#+#+#+#+#+
+	+#+           */
 /*   Created: 2025/09/03 17:40:28 by ko-mahon          #+#    #+#             */
 /*   Updated: 2025/09/23 11:54:18 by ko-mahon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "elden_shell.h"
-#include <stdio.h>
+
 
 void	print_cmds(t_cmd *cmds)
 {
-	int	i;
+	int i;
 
 	while (cmds)
 	{
@@ -31,49 +34,52 @@ void	print_cmds(t_cmd *cmds)
 		if (cmds->outfile)
 			printf("outfile = %s (%s)\n", cmds->outfile,
 				cmds->append ? "append" : "truncate");
+		if (cmds->errfile)
+			printf("errfile = %s (%s)\n", cmds->errfile,
+				cmds->err_append ? "append" : "truncate");
 		cmds = cmds->next;
 	}
 }
 
-int main(int argc, char **argv)
+int main(int argc, char **argv, char **envp)
 {
-    char *line;
+    (void)argc;  // pour éviter le warning
+    (void)argv;  // idem
+    t_env *env;
+    char *line = NULL;
+    size_t len = 0;
     t_token *tokens;
     t_cmd *cmds;
 
-    if (argc < 2)
+    env = init_env(envp);
+
+    while (1)
     {
-        printf("Usage: %s <command>\n", argv[0]);
-        return (1);
+        printf("Elden$ ");
+        fflush(stdout);
+        
+        if (getline(&line, &len, stdin) == -1)
+        {
+            printf("\n");
+            break;
+        }
+
+        if (line[0] == '\n')
+            continue;
+
+        line[strcspn(line, "\n")] = '\0';
+
+        tokens = ft_lexer(line);
+        cmds = parse_tokens(tokens);
+
+        exec_pipeline(cmds, env);  // ret n’est plus stocké
+
+        free_tokens(tokens);
+        free_cmds(cmds);
     }
-
-    // assembler tous les argv[1..argc-1] en une seule ligne
-    size_t len = 0;
-    for (int i = 1; i < argc; i++)
-        len += strlen(argv[i]) + 1; // +1 pour l'espace
-    line = malloc(len);
-    if (!line)
-        return (1);
-
-    line[0] = '\0';
-    for (int i = 1; i < argc; i++)
-    {
-        strcat(line, argv[i]);
-        if (i != argc - 1)
-            strcat(line, " ");
-    }
-
-    printf("Input: %s\n\n", line);
-
-    // 1. Lexing
-    tokens = ft_lexer(line);
-    ft_print_token(tokens);
-
-    // 2. Parsing
-    cmds = parse_tokens(tokens);
-    print_cmds(cmds);
 
     free(line);
-    return (0);
+    free_env(env);
+    return 0;
 }
 

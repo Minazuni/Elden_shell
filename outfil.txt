@@ -1,15 +1,7 @@
 Input: echo salut
 
-=== TOKENS ===
 TOKEN: [echo]
 TOKEN: [salut]
-
-=== PARSED COMMANDS ===
 === Command ===
 argv[0] = echo
 argv[1] = salut
-
-=== EXECUTION ===
-salut
-
-=== Exit status: 0 ===

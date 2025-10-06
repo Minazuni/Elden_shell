@@ -13,53 +13,60 @@
 /* ------------------- TOKEN ------------------- */
 typedef struct s_token
 {
-	char			*value;
-	struct s_token	*next;
-}					t_token;
+	char *value;
+	struct s_token *next;
+} t_token;
 
 /* ------------------- COMMAND ------------------- */
 typedef struct s_cmd
 {
-	char **argv;   // arguments de la commande
-	char *infile;  // fichier d'entrée
-	char *outfile; // fichier de sortie (stdout)
-	int append;    // mode append pour stdout
-
-	char *errfile;  // fichier de sortie (stderr)
-	int err_append; // mode append pour stderr
-
-	struct s_cmd *next; // commande suivante (si pipe)
-}					t_cmd;
+	char **argv;
+	char *infile;
+	char *outfile;
+	int append;
+	char *errfile;
+	int err_append;
+	struct s_cmd *next;
+} t_cmd;
 
 /* ------------------- ENVIRONNEMENT ------------------- */
 typedef struct s_env
 {
-	char *key;          // le nom de la variable (ex: "PATH")
-	char *value;        // sa valeur (ex: "/usr/bin:/bin")
-	struct s_env *next; // pointeur vers la variable suivante
-}					t_env;
+	char *key;
+	char *value;
+	struct s_env *next;
+} t_env;
 
 /* ------------------- lexing.c ------------------- */
-char				*ft_strndup(const char *s, size_t n);
-int					ft_isspace(char c);
-t_token				*ft_new_token(const char *start, int len);
-t_token				*ft_lexer(const char *line);
-void				ft_print_token(t_token *token);
+char	*ft_strndup(const char *s, size_t n);
+int	ft_isspace(char c);
+t_token	*ft_new_token(const char *start, int len);
+t_token	*ft_lexer(const char *line);
+void	ft_print_token(t_token *token);
 
-/* ---------------------parsing_utils.c-------------------------*/
-void				add_cmd_to_list(t_cmd **head, t_cmd *new_cmd);
-t_cmd				*init_cmd(void);
-int					is_word(char *str);
-void				add_to_argv(t_cmd *cmd, char *word);
+/* ------------------- parsing_utils.c ------------------- */
+void	add_cmd_to_list(t_cmd **head, t_cmd *new_cmd);
+t_cmd	*init_cmd(void);
+int	is_word(char *str);
+void	add_to_argv(t_cmd *cmd, char *word);
 
-/* -----------------------parsing.c -----------------------*/
-t_cmd				*parse_tokens(t_token *tokens);
-/* ------------------- EXECUTION ------------------- */
-int					exec_cmd(t_cmd *cmd, t_env *env);
-int					exec_pipeline(t_cmd *cmds, t_env *env);
-int					exec_builtin(t_cmd *cmd, t_env *env);
+/* ------------------- parsing.c ------------------- */
+t_cmd	*parse_tokens(t_token *tokens);
 
-/* ------------------- REDIRECTIONS ------------------- */
-int					setup_redirections(t_cmd *cmd);
+/* ------------------- execution.c ------------------- */
+char	**env_to_array(t_env *env);
+char	*find_command_path(char *cmd, t_env *env);
+int	exec_cmd(t_cmd *cmd, t_env *env);
+int	exec_pipeline(t_cmd *cmds, t_env *env);
+int	exec_builtin(t_cmd *cmd, t_env *env);
+
+/* ------------------- redirection.c ------------------- */
+int	setup_redirections(t_cmd *cmd);
+
+/* ------------------- utils.c ------------------- */
+t_env	*init_env(char **envp);
+void	free_tokens(t_token *tokens);
+void	free_cmds(t_cmd *cmds);
+void	free_env(t_env *env);
 
 #endif

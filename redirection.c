@@ -2,15 +2,19 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   redirection.c                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: ko-mahon <ko-mahon@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
+/*                                                    +:+ +:+        
+	+:+     */
+/*   By: ko-mahon <ko-mahon@student.42.fr>          +#+  +:+      
+	+#+        */
+/*                                                +#+#+#+#+#+  
+	+#+           */
 /*   Created: 2025/09/23 14:30:51 by ko-mahon          #+#    #+#             */
 /*   Updated: 2025/09/23 14:55:43 by ko-mahon         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "elden_shell.h"
+
 
 int	setup_redirections(t_cmd *cmd)
 {
@@ -32,26 +36,23 @@ int	setup_redirections(t_cmd *cmd)
 	if (cmd->outfile)
 	{
 		if (cmd->append)
-			fd = open(cmd->outfile, O_APPEND);
-		// si append on ajoute a la fin du fichier
+			fd = open(cmd->outfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
 		else
-			fd = open(cmd->outfile, O_TRUNC); // sinon un ecrase
+			fd = open(cmd->outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (fd < 0)
 		{
 			perror(cmd->outfile);
 			return (-1);
 		}
-
 		dup2(fd, STDOUT_FILENO);
 		close(fd);
 	}
 	if (cmd->errfile)
 	{
 		if (cmd->err_append)
-			fd = open(cmd->err_append, O_RDONLY | O_WRONLY | O_APPEND, 0644);
+			fd = open(cmd->errfile, O_WRONLY | O_CREAT | O_APPEND, 0644);
 		else
-			fd = open(cmd->err_append, O_RDONLY | O_WRONLY | O_TRUNC, 0644);
-
+			fd = open(cmd->errfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (fd < 0)
 		{
 			perror(cmd->errfile);
@@ -60,4 +61,5 @@ int	setup_redirections(t_cmd *cmd)
 		dup2(fd, STDERR_FILENO);
 		close(fd);
 	}
+	return (0);
 }

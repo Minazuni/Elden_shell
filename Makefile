@@ -14,7 +14,10 @@ LIBFT       = $(LIBFT_DIR)/libft.a
 SRC         = elden_shell.c \
               lexing.c \
               parsing.c \
-              parsing_utils.c
+              parsing_utils.c \
+			  execution.c \
+			  redirection.c \
+			  utils.c
 
 OBJ         = $(SRC:.c=.o)
 
