@@ -1,0 +1,7 @@
+Input: echo salut
+
+TOKEN: [echo]
+TOKEN: [salut]
+=== Command ===
+argv[0] = echo
+argv[1] = salut

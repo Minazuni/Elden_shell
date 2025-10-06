@@ -1,27 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_lstnew.c                                        :+:      :+:    :+:   */
+/*   execution.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ko-mahon <ko-mahon@student.42.fr>          +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/04/08 14:11:19 by ko-mahon          #+#    #+#             */
-/*   Updated: 2025/04/09 10:23:36 by ko-mahon         ###   ########.fr       */
+/*   Created: 2025/09/29 11:00:17 by marvin            #+#    #+#             */
+/*   Updated: 2025/09/29 11:00:17 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "elden_shell.h"
 
-t_list	*ft_lstnew(void *content)
+exec_cmd(t_cmd *cmd, t_env *env)
 {
-	t_list	*new;
-
-	new = malloc(sizeof(t_list));
-	if (!new)
-	{
-		return (NULL);
-	}
-	new->content = content;
-	new->next = NULL;
-	return (new);
+    t_cmd cmd;
+    if*(
+    )
 }

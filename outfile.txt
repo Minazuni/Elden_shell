@@ -1,0 +1,5 @@
+Input: ls
+
+TOKEN: [ls]
+=== Command ===
+argv[0] = ls
