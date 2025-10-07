@@ -54,6 +54,8 @@ void	add_to_argv(t_cmd *cmd, char *word);
 t_cmd	*parse_tokens(t_token *tokens);
 
 /* ------------------- execution.c ------------------- */
+int	count_env(t_env *env);
+char	*kv_join(char *key, char *value);
 char	**env_to_array(t_env *env);
 char	*find_command_path(char *cmd, t_env *env);
 int	exec_cmd(t_cmd *cmd, t_env *env);
@@ -68,5 +70,6 @@ t_env	*init_env(char **envp);
 void	free_tokens(t_token *tokens);
 void	free_cmds(t_cmd *cmds);
 void	free_env(t_env *env);
+void	free_dirs(char **dirs);
 
 #endif

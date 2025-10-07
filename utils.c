@@ -6,7 +6,7 @@
 /*   By: kiki <kiki@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/06 10:03:36 by kiki              #+#    #+#             */
-/*   Updated: 2025/10/06 10:03:38 by kiki             ###   ########.fr       */
+/*   Updated: 2025/10/07 11:17:13 by kiki             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,4 +94,19 @@ void	free_env(t_env *env)
 		free(tmp->value);
 		free(tmp);
 	}
+}
+void	free_dirs(char **dirs)
+{
+	int i;
+
+	i = 0;
+	if (!dirs)
+		return ;
+	while (dirs[i])
+	{
+		free(dirs[i]);
+		i++;
+	}
+	free(dirs);
+	return ;
 }

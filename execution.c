@@ -16,133 +16,216 @@
 #include "elden_shell.h"
 
 
-char	**env_to_array(t_env *env)
+int	count_env(t_env *env)
 {
-	char **envp;
-	int i;
 	int count;
 	t_env *tmp;
-	char *line;
 
 	count = 0;
 	tmp = env;
-	while (tmp)
+	while (tmp != NULL)
 	{
 		count++;
 		tmp = tmp->next;
 	}
+	return (count);
+}
+
+char	*kv_join(char *key, char *value)
+{
+	char *line;
+	int len_key;
+	int len_val;
+	int total_len;
+
+	len_key = 0;
+	len_val = 0;
+	if (key != NULL)
+		len_key = strlen(key);
+	if (value != NULL)
+		len_val = strlen(value);
+	total_len = len_key + 1 + len_val + 1; // '=' + '\0'
+	line = malloc(total_len);
+	if (line == NULL)
+		return (NULL);
+	line[0] = '\0';
+	if (key != NULL)
+		ft_strcat(line, key);
+	ft_strcat(line, "=");
+	if (value != NULL)
+		ft_strcat(line, value);
+	return (line);
+}
+
+char	**env_to_array(t_env *env)
+{
+	int count;
+	char **envp;
+	int i;
+	t_env *tmp;
+	char *line;
+
+	count = count_env(env);
 	envp = malloc(sizeof(char *) * (count + 1));
-	if (!envp)
+	if (envp == NULL)
 		return (NULL);
 	i = 0;
 	tmp = env;
-	while (tmp)
+	while (tmp != NULL)
 	{
-		line = malloc(strlen(tmp->key) + strlen(tmp->value) + 2);
-		sprintf(line, "%s=%s", tmp->key, tmp->value);
-		envp[i++] = line;
+		line = kv_join(tmp->key, tmp->value);
+		if (line == NULL)
+		{
+			while (i > 0)
+			{
+				i--;
+				free(envp[i]);
+			}
+			free(envp);
+			return (NULL);
+		}
+		envp[i] = line;
+		i++;
 		tmp = tmp->next;
 	}
 	envp[i] = NULL;
 	return (envp);
 }
 
+char	*find_path_variable(char **envp)
+{
+	int i;
+
+	i = 0;
+	while (envp[i])
+	{
+		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
+			return (envp[i] + 5);
+		i++;
+	}
+	return (NULL);
+}
+
+char	*join_with_slash(char *dir, char *cmd_path)
+{
+	char *full_path;
+	int len;
+
+	if (!dir || !cmd_path)
+		return (NULL);
+	len = ft_strlen(dir) + 1 + ft_strlen(cmd_path) + 1;
+	full_path = malloc(len);
+	if (!full_path)
+		return (NULL);
+	full_path[0] = '\0';
+	ft_strcat(full_path, dir);
+	ft_strcat(full_path, "/");
+	ft_strcat(full_path, cmd_path);
+	return (full_path);
+}
+
 char	*find_command_path(char *cmd, t_env *env)
 {
 	char *path_env;
-	char *path;
-	char *dir;
+	char **dirs;
 	char *full_path;
-	t_env *tmp;
+	int i;
+	char **envp;
 
 	if (!cmd || cmd[0] == '\0')
 		return (NULL);
 	if (cmd[0] == '/' || cmd[0] == '.')
 		return (ft_strdup(cmd));
-	tmp = env;
-	path_env = NULL;
-	while (tmp)
-	{
-		if (strcmp(tmp->key, "PATH") == 0)
-		{
-			path_env = tmp->value;
-			break ;
-		}
-		tmp = tmp->next;
-	}
-	if (!path_env)
+	envp = env_to_array(env);
+	if (!envp)
 		return (NULL);
-	path = ft_strdup(path_env);
-	dir = strtok(path, ":");
-	while (dir)
+	path_env = find_path_variable(envp);
+	if (!path_env)
 	{
-		full_path = malloc(strlen(dir) + strlen(cmd) + 2);
-		sprintf(full_path, "%s/%s", dir, cmd);
-		if (access(full_path, X_OK) == 0)
+		free_dirs(envp);
+		return (NULL);
+	}
+	dirs = ft_split(path_env, ':');
+	if (!dirs)
+	{
+		free_dirs(envp);
+		return (NULL);
+	}
+	i = 0;
+	while (dirs[i])
+	{
+		full_path = join_with_slash(dirs[i], cmd);
+		if (full_path && access(full_path, X_OK) == 0)
 		{
-			free(path);
+			free_dirs(dirs);
+			free_dirs(envp);
 			return (full_path);
 		}
 		free(full_path);
-		dir = strtok(NULL, ":");
+		i++;
 	}
-	free(path);
+	free_dirs(dirs);
+	free_dirs(envp);
 	return (NULL);
 }
 
-int	exec_builtin(t_cmd *cmd, t_env *env)
-{
-	int i;
-	int newline;
-	char cwd[1024];
-	char *path;
+/*
+Fonction	exec_builtin(cmd, env)
 
-	(void)env;
-	if (!cmd || !cmd->argv || !cmd->argv[0])
-		return (-1);
-	if (strcmp(cmd->argv[0], "echo") == 0)
-	{
-		i = 1;
-		newline = 1;
-		if (cmd->argv[1] && strcmp(cmd->argv[1], "-n") == 0)
-		{
-			newline = 0;
-			i = 2;
-		}
-		while (cmd->argv[i])
-		{
-			printf("%s", cmd->argv[i]);
-			if (cmd->argv[i + 1])
-				printf(" ");
-			i++;
-		}
-		if (newline)
-			printf("\n");
-		return (0);
-	}
-	if (strcmp(cmd->argv[0], "pwd") == 0)
-	{
-		if (getcwd(cwd, sizeof(cwd)))
-		{
-			printf("%s\n", cwd);
-			return (0);
-		}
-		return (-1);
-	}
-	if (strcmp(cmd->argv[0], "cd") == 0)
-	{
-		path = cmd->argv[1] ? cmd->argv[1] : getenv("HOME");
-		if (chdir(path) < 0)
-		{
-			perror("cd");
-			return (-1);
-		}
-		return (0);
-	}
-	if (strcmp(cmd->argv[0], "exit") == 0)
-		exit(0);
-	return (-1);
-}
+	Déclarer i, newline, cwd[1024](dossier courant ou le programme s execute),
+		path
+
+	Ignorer env pour l'instant (void)
+
+	Si cmd est NULL ou cmd->argv est NULL ou cmd->argv[0] est NULL
+		Retourner -1
+
+	// ECHO
+	Si cmd->argv[0] == "echo"
+		i = 1
+		newline = 1
+		Si cmd->argv[1] existe et vaut "-n"
+			newline = 0
+			i = 2
+		Tant que cmd->argv[i] existe
+			Afficher cmd->argv[i]
+			Si cmd->argv[i+1] existe
+				Afficher un espace
+			i = i + 1
+		Fin tant que
+		Si newline == 1
+			Afficher un saut de ligne
+		Retourner 0
+
+	// PWD
+	Si cmd->argv[0] == "pwd"
+		Récupérer le chemin courant avec getcwd(cwd)
+		Si getcwd réussi
+			Afficher cwd + saut de ligne
+			Retourner 0
+		Sinon
+			Retourner -1
+
+	// CD
+	Si cmd->argv[0] == "cd"
+		Si cmd->argv[1] existe
+			path = cmd->argv[1]
+		Sinon
+			path = getenv("HOME")
+		Si chdir(path) échoue
+			Afficher l'erreur avec perror
+			Retourner -1
+		Sinon
+			Retourner 0
+
+	// EXIT
+	Si cmd->argv[0] == "exit"
+		Quitter le programme avec exit(0)
+
+	// Si aucune commande builtin trouvée
+	Retourner -1
+Fin fonction
+*/
 
 int	exec_cmd(t_cmd *cmd, t_env *env)
 {
@@ -153,8 +236,8 @@ int	exec_cmd(t_cmd *cmd, t_env *env)
 
 	if (!cmd || !cmd->argv || !cmd->argv[0])
 		return (-1);
-	if (exec_builtin(cmd, env) != -1)
-		return (0);
+	// if (exec_builtin(cmd, env) != -1)
+	// 	return (0);
 	pid = fork();
 	if (pid < 0)
 	{
